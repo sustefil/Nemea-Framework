@@ -1,3 +1,4 @@
+AUTOMAKE_OPTIONS=subdir-objects
 ACLOCAL_AMFLAGS=-I m4
 DIST_SUBDIRS = tests
 
@@ -22,7 +23,7 @@ ur_values.py: ur_values.h
 lib_LTLIBRARIES=libunirec.la
 libunirec_la_CFLAGS=-fPIC
 libunirec_la_LDFLAGS=-static -ltrap
-libunirec_la_SOURCES=unirec.c unirec.h ur_values.c ur_values.h inline.h ipaddr.h macaddr.h links.h ur_time.h
+libunirec_la_SOURCES=unirec.c unirec.h ur_values.c ur_values.h inline.h ipaddr.h macaddr.h links.h ur_time.h ip_prefix_search/ip_prefix_search.c ip_prefix_search/ip_prefix_search.h 
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = unirec.pc
@@ -34,7 +35,8 @@ unirecinclude_HEADERS=unirec.h \
 		     macaddr.h \
 		     links.h  \
 		     ur_time.h \
-		     ur_values.h
+		     ur_values.h \
+		     ip_prefix_search/ip_prefix_search.h
 
 bin_SCRIPTS=ur_values.sh ur_processor.sh
 

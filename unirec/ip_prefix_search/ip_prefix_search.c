@@ -44,7 +44,7 @@
  *
  */
 
-#include "../include/ip_prefix_search.h"
+#include "ip_prefix_search.h"
 #include "ipps_internal.h"
 
 extern int ip_from_str(const char *str, ip_addr_t *addr);
