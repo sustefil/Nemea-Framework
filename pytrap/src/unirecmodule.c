@@ -13,6 +13,7 @@
 
 #include "fields.h"
 #include "unirecipaddr.h"
+#include "unirecsubnetlist.h"
 #include "pytrapexceptions.h"
 
 UR_FIELDS()
@@ -1511,6 +1512,12 @@ init_unirectemplate(PyObject *m)
     }
     Py_INCREF(&pytrap_UnirecTemplate);
     PyModule_AddObject(m, "UnirecTemplate", (PyObject *) &pytrap_UnirecTemplate);
+
+    if (PyType_Ready(&pytrap_Pokus) < 0) {
+        return EXIT_FAILURE;
+    }
+    Py_INCREF(&pytrap_Pokus);
+    PyModule_AddObject(m, "Pokus", (PyObject *) &pytrap_Pokus);
 
     PyDateTime_IMPORT;
 
