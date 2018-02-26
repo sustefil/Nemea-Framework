@@ -5,9 +5,11 @@
 typedef struct 
 {
 	PyObject_HEAD
-	int a;
-} pytrap_pokus;
+	network_list_t * network_list;
+	unsigned network_list_alloc_size;
+	ipps_context_t * context;
+} pytrap_unirecsubnetlist;
 
-PyAPI_DATA(PyTypeObject) pytrap_Pokus;
+PyAPI_DATA(PyTypeObject) pytrap_UnirecSubnetList;
 
 #endif /* UNIRECIPADDR_H */
