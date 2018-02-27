@@ -2,14 +2,17 @@
 #include <structmember.h>
 #include <unirec/ip_prefix_search.h>
 #include "unirecsubnetlist.h"
+#include "unirecipaddr.h"
+#include "pytrapexceptions.h"
 
 int
 UnirecSubnetList_init(pytrap_unirecsubnetlist *s, PyObject *args)
 {
-	if (s != NULL) {
+   if (s != NULL) {
         s->context = NULL;
-        s->network_list_alloc_size = 100;
-        s->network_list = malloc(s->network_list_alloc_size * sizeof(network_list_t));
+        s->network_list.networks = NULL;
+        s->network_list.net_count = 0;
+
     } else {
         return -1;
     }
@@ -17,37 +20,79 @@ UnirecSubnetList_init(pytrap_unirecsubnetlist *s, PyObject *args)
     return 0;
 }
 
-int
-UnirecSubnetList_addNetwork(pytrap_unirecsubnetlist *self, PyObject *o)
+static PyObject *
+UnirecSubnetList_addNetwork(pytrap_unirecsubnetlist *self, PyObject *args, PyObject *kwds)
 {
-	return 1;
+    char *cidr = NULL;
+    ip_addr_t ip;
+
+    if (!PyArg_ParseTuple(args, "s", &cidr)) {
+        return NULL;
+    }
+
+    char *p = strchr(cidr, '/');
+    if (p == NULL) {
+        PyErr_SetString(TrapError, "Expected IP/mask format.");
+        return NULL;
+    }
+    *(p++) = 0;
+    ip_from_str(cidr, &ip);
+
+    uint32_t cur_count = self->network_list.net_count;
+
+    if (self->network_list.networks == NULL) {
+        self->network_list.networks = calloc(cur_count, sizeof(ipps_network_t));
+        if (self->network_list.networks == NULL) {
+            PyErr_SetString(PyExc_MemoryError, "Allocation of end address failed.");
+            return NULL;
+        }
+    } else {
+        void *ret = realloc(self->network_list.networks, (cur_count + 1) * sizeof(ipps_network_t));
+        if (ret == NULL) {
+            /* error */
+            PyErr_SetString(PyExc_MemoryError, "Allocation of end address failed.");
+            return NULL;
+        }
+        self->network_list.networks = ret;
+    }
+
+    /* insert new subnet into array */
+    memcpy(&self->network_list.networks[cur_count].addr, &ip, sizeof(ip_addr_t));
+    self->network_list.networks[cur_count].mask = atoi(p);
+    self->network_list.networks[cur_count].data = 0;
+    self->network_list.networks[cur_count].data_len = 0;
+
+    self->network_list.net_count++;
+
+    Py_RETURN_NONE;
 }
 
-int
+static int
 UnirecSubnetList_createContext(pytrap_unirecsubnetlist *self)
 {
-	self->context = ipps_init(self->network_list);
+	self->context = ipps_init(&self->network_list);
+    
+    Py_RETURN_NONE;
 }
 
 static int
 UnirecSubnetList_contains(PyObject *o, PyObject *v)
 {
-    // if (PyObject_IsInstance(v, (PyObject *) &pytrap_UnirecIPAddr)) {
-    //     pytrap_unirecipaddr *object = (pytrap_unirecipaddr *) o;
-    //     pytrap_unirecipaddr *value = (pytrap_unirecipaddr *) v;
+    pytrap_unirecsubnetlist *self = (pytrap_unirecsubnetlist *) o;
+    void **pdata;
 
-    //     if (ip_cmp(&object->ip, &value->ip) == 0) {
-    //         return 1;
-    //     } else {
-    //         return 0;
-    //     }
+    if (PyObject_IsInstance(v, (PyObject *) &pytrap_UnirecIPAddr)) {
+        pytrap_unirecipaddr *value = (pytrap_unirecipaddr *) v;
 
-    // } else {
-    //     PyErr_SetString(PyExc_TypeError, "UnirecIPAddr object expected.");
-    //     return -1;
-    // }
-
-    return 1;
+        if (ipps_search(&value->ip, self->context, &pdata)) {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else {
+        PyErr_SetString(PyExc_TypeError, "UnirecIPAddr object expected.");
+        return -1;
+    }
 }
 
 static PyObject *
@@ -57,7 +102,7 @@ UnirecSubnetList_str(pytrap_unirecsubnetlist *self)
 }
 
 static PyMethodDef pytrap_unirecsubnetlist_methods[] = {
-    {"addNetwork", (PyCFunction) UnirecSubnetList_addNetwork, METH_O,
+    {"addNetwork", (PyCFunction) UnirecSubnetList_addNetwork, METH_VARARGS | METH_KEYWORDS,
         "TODO\n\n"
         "Returns:\n"
         "    bool: True\n"
@@ -101,7 +146,7 @@ PyTypeObject pytrap_UnirecSubnetList = {
     0,                         /* tp_as_mapping */
     0,                         /* tp_hash  */
     0,                         /* tp_call */
-    (reprfunc) UnirecSubnetList_str,                         /* tp_str */
+    0,//TODO (reprfunc) UnirecSubnetList_str,                         /* tp_str */
     0,                         /* tp_getattro */
     0,                         /* tp_setattro */
     0,                         /* tp_as_buffer */

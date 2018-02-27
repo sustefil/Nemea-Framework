@@ -6,7 +6,7 @@
 // of the C standard used.
 // Note: Probably works only with gcc
 #ifdef __GNUC_STDC_INLINE__ // C99
-#define INLINE inline
+#define INLINE static inline
 #define INLINE_IMPL extern inline
 #else // C90
 #define INLINE static inline

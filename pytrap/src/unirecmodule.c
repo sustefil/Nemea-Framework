@@ -1513,11 +1513,12 @@ init_unirectemplate(PyObject *m)
     Py_INCREF(&pytrap_UnirecTemplate);
     PyModule_AddObject(m, "UnirecTemplate", (PyObject *) &pytrap_UnirecTemplate);
 
-    if (PyType_Ready(&pytrap_Pokus) < 0) {
+
+    if (PyType_Ready(&pytrap_UnirecSubnetList) < 0) {
         return EXIT_FAILURE;
     }
-    Py_INCREF(&pytrap_Pokus);
-    PyModule_AddObject(m, "Pokus", (PyObject *) &pytrap_Pokus);
+    Py_INCREF(&pytrap_UnirecSubnetList);
+    PyModule_AddObject(m, "UnirecSubnetList", (PyObject *) &pytrap_UnirecSubnetList);
 
     PyDateTime_IMPORT;
 

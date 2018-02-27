@@ -2,12 +2,13 @@
 #ifndef UNIRECSUBNETLIST_H
 #define UNIRECSUBNETLIST_H
 
+#include <unirec/ip_prefix_search.h>
+
 typedef struct 
 {
 	PyObject_HEAD
-	network_list_t * network_list;
-	unsigned network_list_alloc_size;
-	ipps_context_t * context;
+	ipps_network_list_t network_list;
+	ipps_context_t *context;
 } pytrap_unirecsubnetlist;
 
 PyAPI_DATA(PyTypeObject) pytrap_UnirecSubnetList;
