@@ -41,7 +41,7 @@ UnirecSubnetList_addNetwork(pytrap_unirecsubnetlist *self, PyObject *args, PyObj
     uint32_t cur_count = self->network_list.net_count;
 
     if (self->network_list.networks == NULL) {
-        self->network_list.networks = calloc(cur_count, sizeof(ipps_network_t));
+        self->network_list.networks = calloc(1, sizeof(ipps_network_t));
         if (self->network_list.networks == NULL) {
             PyErr_SetString(PyExc_MemoryError, "Allocation of end address failed.");
             return NULL;
