@@ -24,19 +24,23 @@ static PyObject *
 UnirecSubnetList_addNetwork(pytrap_unirecsubnetlist *self, PyObject *args, PyObject *kwds)
 {
     char *cidr = NULL;
+    char buf[50];
     ip_addr_t ip;
 
     if (!PyArg_ParseTuple(args, "s", &cidr)) {
         return NULL;
     }
 
-    char *p = strchr(cidr, '/');
-    if (p == NULL) {
+    char *mask_ptr = strchr(cidr, '/');
+    if (mask_ptr == NULL) {
         PyErr_SetString(TrapError, "Expected IP/mask format.");
         return NULL;
     }
-    *(p++) = 0;
-    ip_from_str(cidr, &ip);
+
+    strncpy(buf, cidr, mask_ptr - cidr);
+    buf[mask_ptr - cidr] = 0;
+
+    ip_from_str(buf, &ip);
 
     uint32_t cur_count = self->network_list.net_count;
 
@@ -58,7 +62,7 @@ UnirecSubnetList_addNetwork(pytrap_unirecsubnetlist *self, PyObject *args, PyObj
 
     /* insert new subnet into array */
     memcpy(&self->network_list.networks[cur_count].addr, &ip, sizeof(ip_addr_t));
-    self->network_list.networks[cur_count].mask = atoi(p);
+    self->network_list.networks[cur_count].mask = atoi(++mask_ptr);
     self->network_list.networks[cur_count].data = 0;
     self->network_list.networks[cur_count].data_len = 0;
 
