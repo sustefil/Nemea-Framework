@@ -329,6 +329,10 @@ UnirecIPAddrRange_dealloc(pytrap_unirecipaddrrange *self)
 {
     Py_XDECREF(self->start);
     Py_XDECREF(self->end);
+
+    if (self->cidr_format != NULL)
+        PyMem_Free(self->cidr_format);
+
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -352,6 +356,8 @@ UnirecIPAddrRange_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
             Py_DECREF(self->start);
             return NULL;
         }
+
+        self->cidr_format = NULL;
     }
 
     return (PyObject *)self;
@@ -513,6 +519,9 @@ UnirecIPAddrRange_init(pytrap_unirecipaddrrange *self, PyObject *args, PyObject 
             }
 
             /* expected string in <ip>/<mask> format, e.g. 192.168.1.0/24 */
+            self->cidr_format = PyMem_New(char, INET6_ADDRSTRLEN + 4);
+            strcpy(self->cidr_format, str);
+
             *netmask = '\0';
             netmask++;
             if (sscanf(netmask, "%" SCNu8, &mask) != 1) {
@@ -625,6 +634,16 @@ out:
 }
 
 static PyObject *
+UnirecIPAddrRange_cidrFormat(pytrap_unirecipaddrrange *self)
+{
+    if (self->cidr_format != NULL)
+        return PyUnicode_FromFormat("%s", self->cidr_format);
+
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
 UnirecIPAddrRange_repr(pytrap_unirecipaddrrange *self)
 {
     PyObject *ip1 = NULL, *ip2 = NULL, *res = NULL;
@@ -698,6 +717,9 @@ static PyMethodDef UnirecIPAddrRange_methods[] = {
         "Returns:\n"
         "    bool: True if ranges are overlaps.\n"
         },
+
+    {"cidrFormat", (PyCFunction) UnirecIPAddrRange_cidrFormat, METH_NOARGS},
+
     {NULL}  /* Sentinel */
 };
 

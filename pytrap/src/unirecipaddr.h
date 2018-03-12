@@ -4,7 +4,6 @@
 extern "C" {
 #endif
 
-
 typedef struct {
     PyObject_HEAD
     ip_addr_t ip;
@@ -16,6 +15,7 @@ typedef struct {
     PyObject_HEAD
     pytrap_unirecipaddr *start; /* low ip */
     pytrap_unirecipaddr *end;   /* high ip*/
+    char *cidr_format;
 } pytrap_unirecipaddrrange;
 
 PyAPI_DATA(PyTypeObject) pytrap_UnirecIPAddrRange;

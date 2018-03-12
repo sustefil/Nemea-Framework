@@ -24,7 +24,7 @@ static PyObject *
 UnirecSubnetList_addNetwork(pytrap_unirecsubnetlist *self, PyObject *args, PyObject *kwds)
 {
     char *cidr = NULL;
-    char buf[50];
+    char buf[INET6_ADDRSTRLEN + 4];
     ip_addr_t ip;
 
     if (!PyArg_ParseTuple(args, "s", &cidr)) {
@@ -71,7 +71,7 @@ UnirecSubnetList_addNetwork(pytrap_unirecsubnetlist *self, PyObject *args, PyObj
     Py_RETURN_NONE;
 }
 
-static int
+static PyObject *
 UnirecSubnetList_createContext(pytrap_unirecsubnetlist *self)
 {
 	self->context = ipps_init(&self->network_list);
